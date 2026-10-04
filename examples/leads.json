@@ -1,0 +1,19 @@
+[
+  {
+    "first_name": "Sarah",
+    "last_name": "Kim",
+    "email": "sarah@example.com",
+    "role": "VP of Sales",
+    "company_name": "Example Company",
+    "company_website": "https://example.com"
+  },
+  {
+    "first_name": "Jordan",
+    "last_name": "Lee",
+    "email": "jordan@example.org",
+    "role": "Revenue Operations Lead",
+    "company_name": "Example Organization",
+    "company_website": "https://example.org"
+  }
+]
+

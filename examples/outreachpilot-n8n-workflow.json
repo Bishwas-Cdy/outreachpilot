@@ -1,0 +1,117 @@
+{
+  "name": "OutreachPilot - human-approved outreach",
+  "nodes": [
+    {
+      "parameters": {"httpMethod": "POST", "path": "outreachpilot-lead", "responseMode": "lastNode"},
+      "id": "webhook",
+      "name": "Lead webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.OUTREACHPILOT_BASE_URL}}/webhooks/outreach",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.body || $json) }}"
+      },
+      "id": "ingest",
+      "name": "Ingest lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.OUTREACHPILOT_BASE_URL}}/contacts/{{$json.contact.id}}/research"
+      },
+      "id": "research",
+      "name": "Research",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.OUTREACHPILOT_BASE_URL}}/contacts/{{$('Ingest lead').item.json.contact.id}}/draft"
+      },
+      "id": "draft",
+      "name": "Generate draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {"assignments": {"assignments": [{"name": "approved", "value": false, "type": "boolean"}]}},
+      "id": "human-review",
+      "name": "Human approval placeholder",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 0],
+      "notes": "Replace with a real human approval step. Defaults to false for safety."
+    },
+    {
+      "parameters": {"conditions": {"boolean": [{"value1": "={{$json.approved}}", "value2": true}]}},
+      "id": "approved-if",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1100, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.OUTREACHPILOT_BASE_URL}}/drafts/{{$('Generate draft').item.json.id}}/approve"
+      },
+      "id": "approve",
+      "name": "Approve draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1320, -100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.OUTREACHPILOT_BASE_URL}}/drafts/{{$('Generate draft').item.json.id}}/send"
+      },
+      "id": "send",
+      "name": "Send approved draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, -100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.OUTREACHPILOT_BASE_URL}}/drafts/{{$('Generate draft').item.json.id}}/reject"
+      },
+      "id": "reject",
+      "name": "Reject draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1320, 100]
+    }
+  ],
+  "connections": {
+    "Lead webhook": {"main": [[{"node": "Ingest lead", "type": "main", "index": 0}]]},
+    "Ingest lead": {"main": [[{"node": "Research", "type": "main", "index": 0}]]},
+    "Research": {"main": [[{"node": "Generate draft", "type": "main", "index": 0}]]},
+    "Generate draft": {"main": [[{"node": "Human approval placeholder", "type": "main", "index": 0}]]},
+    "Human approval placeholder": {"main": [[{"node": "Approved?", "type": "main", "index": 0}]]},
+    "Approved?": {
+      "main": [
+        [{"node": "Approve draft", "type": "main", "index": 0}],
+        [{"node": "Reject draft", "type": "main", "index": 0}]
+      ]
+    },
+    "Approve draft": {"main": [[{"node": "Send approved draft", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder": "v1"},
+  "versionId": "00000000-0000-4000-8000-000000000001"
+}
