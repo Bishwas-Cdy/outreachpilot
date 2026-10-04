@@ -1,6 +1,6 @@
 # OutreachPilot
 
-OutreachPilot is a portfolio-grade FastAPI service for evidence-grounded B2B account research and personalized outreach drafting. It demonstrates the workflow an AI GTM engineer might automate while keeping the consequential step—sending a message—under explicit human control.
+OutreachPilot is a FastAPI service for evidence-grounded B2B account research, personalized outreach drafting, and human-approved delivery workflows.
 
 > OutreachPilot is not a bulk email sender. It never sends an unapproved draft, and its default delivery mode only records a mock send.
 
